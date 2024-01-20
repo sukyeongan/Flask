@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>간단한 할 일 목록</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.7.1.js"
+        integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+
+    <style>
+        .btn-warning {
+            color: white;
+        }
+    </style>
+
+    <script>
+
+        $(document).ready(function () {
+            $('.update-box').hide();
+            showTodos();
+        });
+
+
+        function showTodos() {
+            $('#todo-list').html("");
+            $.ajax({
+                type: "GET",
+                url: 'todo/show',
+                data: {},
+                success: function (response) {
+                    let todos = response["todos"];
+                    for (let i = 0; i < todos.length; i++) {
+                        let todo = todos[i]['todo']
+
+                        let temp_html = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                ${todo}
+                <span>
+                    <button class="btn btn-success btn-sm mr-1" onclick="completeTodo()">완료</button>
+                    <button class="btn btn-secondary btn-sm mr-1" onclick="editTodo()">수정</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteTodo()">삭제</button>
+                </span>
+            </li>
+    
+            <!-- 예시 할 일 (완료 상태) -->
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <del>${todo} (완료)</del>
+                <span>
+                    <button class="btn btn-secondary btn-sm mr-1">수정</button>
+                    <button class="btn btn-danger btn-sm">삭제</button>
+                </span>
+            </li>
+            <!-- 예시 할 일 (수정 상태) -->
+            <div id = "update-box" style="display:none" class="list-group-item d-flex justify-content-between align-items-center">
+                <form class="form-inline w-75">
+                    <input id= "todo-val2" type="text" class="form-control mr-2 w-75" value="">
+                    <button onclick="updateTodo()" type="submit" class="btn btn-secondary btn-sm mr-1">업데이트</button>
+                    <button class="btn btn-warning btn-sm">취소</button>
+                </form>
+            </div>`
+                        $('#todo-list').append(temp_html);
+
+                    }
+                }
+
+            });
+        }
+
+        function makeTodo() {
+            let todo = $('#todo-val').val();
+            if (!todo) {
+                alert('할일을 입력해주세요!');
+                return;
+            }
+            $.ajax({
+                type: "POST",
+                url: "/todo/post",
+                data: { 'todo_give': todo },
+                success: function (response) {
+                    if (response['result'] == 'success') {
+                        alert(response["msg"]);
+                        window.location.reload();
+                    } else {
+                        alert('서버오류!')
+                    }
+                }
+            })
+        }
+
+        function completeTodo() {
+
+            $.ajax({
+                type: "POST",
+                url: "/todo/complete",
+                data: {},
+                success: function (response) {
+                    if (response['result'] == 'success') {
+                        alert(response["msg"]);
+                        window.location.reload();
+                    } else {
+                        alert('서버오류!')
+                    }
+                }
+            })
+        }
+
+
+        function updateTodo(){
+            let todo = $('#todo-val2').val();
+            if (!todo) {alert('할 일을 입력해주세요!');
+            return;}
+
+            $.ajax({
+                type: "POST",
+                url: "/todo/update",
+                data: {},
+                success: function (response) {
+                    if (response['result'] == 'success') {
+                        alert(response["msg"]);
+                        window.location.reload();
+                    } else {
+                        alert('서버오류!')
+                    }
+                }
+            })
+
+        }
+
+
+        function deleteTodo() {
+
+            $.ajax({
+                type: "POST",
+                url: "/todo/delete",
+                data: {},
+                success: function (response) {
+                    if (response['result'] == 'success') {
+                        alert(response["msg"]);
+                        window.location.reload();
+                    } else {
+                        alert('서버오류!')
+                    }
+                }
+            });
+        }
+
+            
+    </script>
+
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">할 일 목록</h2>
+        <!-- 할 일 추가 폼 -->
+        <form class="form-inline mb-4">
+            <input id="todo-val" type="text" class="form-control mr-2 w-50" placeholder="새 할 일">
+            <button type="button" class="btn btn-primary" onclick="makeTodo()">할 일 추가</button>
+        </form>
+        ​
+        <!-- 할 일 목록 -->
+        <ul id="todo-list" class="list-group">
+            <!-- 예시 할 일 (기본 상태) -->
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                할 일 1
+                <span>
+                    <button class="btn btn-success btn-sm mr-1" onclick="completeTodo()">완료</button>
+                    <button class="btn btn-secondary btn-sm mr-1" onclick="editTodo()">수정</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteTodo()">삭제</button>
+                </span>
+            </li>
+
+            <!-- 예시 할 일 (완료 상태) -->
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <del>할 일 2 (완료)</del>
+                <span>
+                    <button class="btn btn-secondary btn-sm mr-1">수정</button>
+                    <button class="btn btn-danger btn-sm">삭제</button>
+                </span>
+            </li>
+            ​
+            <!-- 예시 할 일 (수정 상태) -->
+            <div id = "update-box" style="display:none" class="list-group-item d-flex justify-content-between align-items-center">
+                <form class="form-inline w-75">
+                    <input id= "todo-val2" type="text" class="form-control mr-2 w-75" value="">
+                    <button onclick="updateTodo()" type="submit" class="btn btn-secondary btn-sm mr-1" placeholder="($('#todo-val').val())">업데이트</button>
+                    <button class="btn btn-warning btn-sm">취소</button>
+                </form>
+            </div>
+            <!-- 추가 할 일이 여기에 추가됩니다 -->
+        </ul>
+    </div>
+</body>
+</html>
