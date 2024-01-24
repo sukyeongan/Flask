@@ -9,52 +9,52 @@ import certifi
 
 ca = certifi.where()
 
-client = MongoClient('mongodb+srv://sparta:jungle@sukyeong.o2xkdoo.mongodb.net/?retryWrites=true&w=majority', tlsCAFile=ca)
+client = MongoClient('mongodb+srv://sparta:jungle@sukyeong.o2xkdoo.mongodb.net/?retryWrites=true&w=majority', tlsCAFile=ca       )
 db = client.dbsparta
 
 
-## HTML을 주는 부분
+# HTML 화면 보여주기 
 @app.route('/')
 def home():
-   return render_template('index.html')
-
-@app.route('/todo/show', methods=['GET'])
-def show_todo():
-    # 1. 모든 document 찾기 & _id 값은 출력에서 제외하기
-    todos = list(db.todos.find({},{'_id':False}))
-
-    # 2. articles라는 키 값으로 도서정보 내려주기
-    return jsonify({'result':'success', 'todos':todos})
-
-## API 역할을 하는 부분
-@app.route('/todo/post', methods=['POST'])
-def make_todo():
-    todo_receive = request.form['todo_give']
-    doc = {
-        'todo': todo_receive
-    }
-
-    db.todos.insert_one(doc)
-    return jsonify({'result': 'success', 'msg': '등록 완료!'})
-
-@app.route('/todo/update', methods=['POST'])
-def update_todo():
-
-    return jsonify({'result': 'success', 'msg': '할 일 업데이트 완료!'})
-
-@app.route('/todo/complete', methods=['POST'])
-def complete_todo():
-    
-    return jsonify({'result': 'success', 'msg': '할 일 체크 완료!'})
+    return render_template('index.html')
 
 
+# API 역할을 하는 부분
+@app.route('/api/books/list', methods=['GET'])
+def show_books():
+    # 1. db에서 books 목록 전체를 검색합니다. ID는 제외하고 like 가 많은 순으로 정렬합니다.
+    all_books = list(db.books.find({},{'_id' : False}).sort("like",-1))
+    # 참고) find({},{'_id':False}), sort()를 활용하면 굿!
+    # 2. 성공하면 success 메시지와 함께 all_books 목록을 클라이언트에 전달합니다.
+    return jsonify({'result': 'success', 'all_books': all_books})
 
 
-@app.route('/todo/delete', methods=['POST'])
-def delete_todo():
-    
-    return jsonify({'result': 'success', 'msg': '할 일 삭제 완료!'})
+@app.route('/api/books/like', methods=['POST'])
+def like_book():
+    # 1. 클라이언트가 전달한 title_give를 title_receive 변수에 넣습니다.
+    title_receive = request.form('title_give')
+    # 2. books 목록에서 find_one으로 title이 title_receive와 일치하는 book을 찾습니다.
+    target_like = db.books.find_one({'title':title_receive})
+    # 3. star의 like 에 1을 더해준 new_like 변수를 만듭니다.
+    new_like = target_like + 1
+    # 4. books 목록에서 title이 title_receive인 문서의 like 를 new_like로 변경합니다.
+    # 참고: '$set' 활용하기!
+    db.books.update_one({"title" : title_receive},{'$set':{'like':new_like}})
+    # 5. 성공하면 success 메시지를 반환합니다.
+    return jsonify({'result': 'success', 'msg': '좋아요 완료!'})
+
+
+@app.route('/api/books/delete', methods=['POST'])
+def delete_book():
+    # 1. 클라이언트가 전달한 title_give를 title_receive 변수에 넣습니다.
+    title_receive = request.form('title_give')
+    # 2. books 목록에서 delete_one으로 title이 title_receive와 일치하는 book을 제거합니다.
+    db.books.update_one({"title" : title_receive})
+    # 3. 성공하면 success 메시지를 반환합니다.
+    return jsonify({'result': 'success', 'msg': '삭제 완료!'})
+
+
 
 
 if __name__ == '__main__':
-   app.run('0.0.0.0',port=5000,debug=True)
+    app.run('0.0.0.0', port=5000, debug=True)

@@ -2,196 +2,175 @@
 <html lang="ko">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>간단한 할 일 목록</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.7.1.js"
-        integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>마이 페이보릿 북 | 프론트-백엔드 연결 마지막 예제!</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css" />
+    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
     <style>
-        .btn-warning {
-            color: white;
-        }
-    </style>
-
-    <script>
-
-        $(document).ready(function () {
-            $('.update-box').hide();
-            showTodos();
-        });
-
-
-        function showTodos() {
-            $('#todo-list').html("");
-            $.ajax({
-                type: "GET",
-                url: 'todo/show',
-                data: {},
-                success: function (response) {
-                    let todos = response["todos"];
-                    for (let i = 0; i < todos.length; i++) {
-                        let todo = todos[i]['todo']
-
-                        let temp_html = `<li class="list-group-item d-flex justify-content-between align-items-center">
-                ${todo}
-                <span>
-                    <button class="btn btn-success btn-sm mr-1" onclick="completeTodo()">완료</button>
-                    <button class="btn btn-secondary btn-sm mr-1" onclick="editTodo()">수정</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteTodo()">삭제</button>
-                </span>
-            </li>
-    
-            <!-- 예시 할 일 (완료 상태) -->
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <del>${todo} (완료)</del>
-                <span>
-                    <button class="btn btn-secondary btn-sm mr-1">수정</button>
-                    <button class="btn btn-danger btn-sm">삭제</button>
-                </span>
-            </li>
-            <!-- 예시 할 일 (수정 상태) -->
-            <div id = "update-box" style="display:none" class="list-group-item d-flex justify-content-between align-items-center">
-                <form class="form-inline w-75">
-                    <input id= "todo-val2" type="text" class="form-control mr-2 w-75" value="">
-                    <button onclick="updateTodo()" type="submit" class="btn btn-secondary btn-sm mr-1">업데이트</button>
-                    <button class="btn btn-warning btn-sm">취소</button>
-                </form>
-            </div>`
-                        $('#todo-list').append(temp_html);
-
-                    }
-                }
-
-            });
-        }
-
-        function makeTodo() {
-            let todo = $('#todo-val').val();
-            if (!todo) {
-                alert('할일을 입력해주세요!');
-                return;
+         .center {
+                text-align: center;
             }
-            $.ajax({
-                type: "POST",
-                url: "/todo/post",
-                data: { 'todo_give': todo },
-                success: function (response) {
-                    if (response['result'] == 'success') {
-                        alert(response["msg"]);
-                        window.location.reload();
-                    } else {
-                        alert('서버오류!')
-                    }
-                }
-            })
-        }
 
-        function completeTodo() {
+            .book-list {
+                width: 500px;
+                margin: 20px auto 0 auto;
+            }
 
-            $.ajax({
-                type: "POST",
-                url: "/todo/complete",
-                data: {},
-                success: function (response) {
-                    if (response['result'] == 'success') {
-                        alert(response["msg"]);
-                        window.location.reload();
-                    } else {
-                        alert('서버오류!')
-                    }
-                }
-            })
-        }
+            .star-name {
+                display: inline-block;
+            }
 
+            .star-name:hover {
+                text-decoration: underline;
+            }
 
-        function updateTodo(){
-            let todo = $('#todo-val2').val();
-            if (!todo) {alert('할 일을 입력해주세요!');
-            return;}
+            .card {
+                margin-bottom: 15px;
+            }
+        </style>
+        <script>
+           $(document).ready(function () {
+                // index.html 로드가 완료되면 자동으로 showBooks() 함수를 호출합니다.
+                showBooks();
+            });
 
-            $.ajax({
-                type: "POST",
-                url: "/todo/update",
-                data: {},
-                success: function (response) {
-                    if (response['result'] == 'success') {
-                        alert(response["msg"]);
-                        window.location.reload();
-                    } else {
-                        alert('서버오류!')
-                    }
-                }
-            })
+            function showBooks() {
+                $.ajax({
+                    type: 'GET',
+                    url: '/api/books/list',
+                    data: {},
+                    success: function (response) {
+                        if (response['result'] == 'success') {
+                            
+                            $("#book-box").empty()
 
-        }
+                            let all_books = response["all_books"];
+                            for (i=0; i<all_books.length; i++) {
+                                let title = all_books[i]['title']
+                                let auth = all_books[i]['auth']
+                                let like = all_books[i]['like']
+                                let href = all_books[i]['href']
+                                let img_url = all_books[i]['img_url']
 
+                                let temp_html = `<div class="card">
+                                                    <div class="card-content">
+                                                        <div class="media">
+                                                            <div class="media-left">
+                                                                <figure class="image is-48x48">
+                                                                    <img
+                                                                            src="${img_url}"
+                                                                            alt="Placeholder image"
+                                                                    />
+                                                                </figure>
+                                                            </div>
+                                                            <div class="media-content">
+                                                                <a href="#" target="_blank" class="star-name title is-4">${auth} (좋아요: ${like})</a>
+                                                                <p class="subtitle is-6">${title}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <footer class="card-footer">
+                                                        <a href="#" onclick="likeBooks('${title}')" class="card-footer-item has-text-info">
+                                                            위로!
+                                                            <span class="icon">
+                                                <i class="fas fa-thumbs-up"></i>
+                                                </span>
+                                                        </a>
+                                                        <a href="#" onclick="deleteBooks('${title}')" class="card-footer-item has-text-danger">
+                                                            삭제
+                                                            <span class="icon">
+                                                <i class="fas fa-ban"></i>
+                                                </span>
+                                                        </a>
+                                                    </footer>
+                                                </div>`
+                                                $('#book-box').append(temp_html)
 
-        function deleteTodo() {
-
-            $.ajax({
-                type: "POST",
-                url: "/todo/delete",
-                data: {},
-                success: function (response) {
-                    if (response['result'] == 'success') {
-                        alert(response["msg"]);
-                        window.location.reload();
-                    } else {
-                        alert('서버오류!')
+                        }
                     }
                 }
             });
         }
+             function likeBooks(name) {
+                 $.ajax({
+                     type: 'POST',
+                     url: '/api/books/like',
+                     data: {'title_give' : title},
+                     success: function (response) {
+                         if (response['result'] == 'success') {
+                             let msg = response['msg'];
+                             alert(msg);
+                             showBooks();
+                         }
+                     }
+                 });
+             }
+             
+             function deleteBooks(name) {
+                 $.ajax({
+                     type: 'POST',
+                     url: '/api/books/delete',
+                     data: {'title_give' : title},
+                     success: function (response) {
+                         if (response['result'] == 'success') {
+                             let msg = response['msg'];
+                             alert(msg);
+                             showBooks();
+                         }
+                     }
+                 });
+             }
 
-            
-    </script>
-
-</head>
-
-<body>
-    <div class="container mt-5">
-        <h2 class="text-center mb-4">할 일 목록</h2>
-        <!-- 할 일 추가 폼 -->
-        <form class="form-inline mb-4">
-            <input id="todo-val" type="text" class="form-control mr-2 w-50" placeholder="새 할 일">
-            <button type="button" class="btn btn-primary" onclick="makeTodo()">할 일 추가</button>
-        </form>
-        ​
-        <!-- 할 일 목록 -->
-        <ul id="todo-list" class="list-group">
-            <!-- 예시 할 일 (기본 상태) -->
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                할 일 1
-                <span>
-                    <button class="btn btn-success btn-sm mr-1" onclick="completeTodo()">완료</button>
-                    <button class="btn btn-secondary btn-sm mr-1" onclick="editTodo()">수정</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteTodo()">삭제</button>
-                </span>
-            </li>
-
-            <!-- 예시 할 일 (완료 상태) -->
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <del>할 일 2 (완료)</del>
-                <span>
-                    <button class="btn btn-secondary btn-sm mr-1">수정</button>
-                    <button class="btn btn-danger btn-sm">삭제</button>
-                </span>
-            </li>
-            ​
-            <!-- 예시 할 일 (수정 상태) -->
-            <div id = "update-box" style="display:none" class="list-group-item d-flex justify-content-between align-items-center">
-                <form class="form-inline w-75">
-                    <input id= "todo-val2" type="text" class="form-control mr-2 w-75" value="">
-                    <button onclick="updateTodo()" type="submit" class="btn btn-secondary btn-sm mr-1" placeholder="($('#todo-val').val())">업데이트</button>
-                    <button class="btn btn-warning btn-sm">취소</button>
-                </form>
+        </script>
+    </head>
+    <body>
+        <section class="hero is-warning">
+            <div class="hero-body">
+                <div class="container center">
+                    <h1 class="title">
+                        마이 페이보릿 북😆
+                    </h1>
+                    <h2 class="subtitle">
+                        순위를 매겨봅시다
+                    </h2>
+                </div>
             </div>
-            <!-- 추가 할 일이 여기에 추가됩니다 -->
-        </ul>
-    </div>
-</body>
+        </section>
+        <div class="book-list" id="book-box">
+            <div class="card">
+                <div class="card-content">
+                    <div class="media">
+                        <div class="media-left">
+                            <figure class="image is-48x48">
+                                <img
+                                        src="https://image.yes24.com/goods/122120495/L"
+                                        alt="Placeholder image"
+                                />
+                            </figure>
+                        </div>
+                        <div class="media-content">
+                            <a href="#" target="_blank" class="star-name title is-4">강용수 (좋아요: 3)</a>
+                            <p class="subtitle is-6">마흔에 읽는 쇼펜하우어</p>
+                        </div>
+                    </div>
+                </div>
+                <footer class="card-footer">
+                    <a href="#" onclick="likeBooks('강용수')" class="card-footer-item has-text-info">
+                        위로!
+                        <span class="icon">
+              <i class="fas fa-thumbs-up"></i>
+            </span>
+                    </a>
+                    <a href="#" onclick="deleteBooks('강용수')" class="card-footer-item has-text-danger">
+                        삭제
+                        <span class="icon">
+              <i class="fas fa-ban"></i>
+            </span>
+                    </a>
+                </footer>
+            </div>
+        </div>
+    </body>
 </html>
